@@ -1815,6 +1815,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 moment__WEBPACK_IMPORTED_MODULE_0___default.a.lang('es'); // viene con el moment, cambia idioma
@@ -1826,7 +1835,7 @@ moment__WEBPACK_IMPORTED_MODULE_0___default.a.lang('es'); // viene con el moment
       tareas: [],
       newTarea: '',
       identificadorEditar: false,
-      editDescription: ''
+      editDescription: []
     };
   },
   created: function created() {
@@ -1839,9 +1848,10 @@ moment__WEBPACK_IMPORTED_MODULE_0___default.a.lang('es'); // viene con el moment
     getTareas: function getTareas() {
       var _this = this;
 
+      // $('#loadersModal').modal('toggle');
       var url = 'mis-tareas';
       axios.get(url).then(function (response) {
-        _this.tareas = response.data;
+        _this.tareas = response.data; // $('#loadersModal').modal('toggle');
       });
     },
     createTarea: function createTarea() {
@@ -1852,55 +1862,60 @@ moment__WEBPACK_IMPORTED_MODULE_0___default.a.lang('es'); // viene con el moment
         description: this.newTarea
       }).then(function (response) {
         // si hay una respuesta ok
+        _this2.editDescription = [];
+
         _this2.getTareas();
 
-        _this2.newIdea = '';
-        toastr__WEBPACK_IMPORTED_MODULE_1___default.a.success('No hubo problemas al guardar.', 'EXITOSO', {
-          timeOut: 95000
-        });
+        _this2.newIdea = ''; // toastr.success(response.data.message , 'EXITOSO', {timeOut: 55000})                     
+
+        _this2.identificadorEditar = false;
       }).catch(function (error) {
         // si hay un error
         toastr__WEBPACK_IMPORTED_MODULE_1___default.a.error('Error');
       });
     },
-    cambioEditar: function cambioEditar() {
+    cambioEditar: function cambioEditar(tareaDescription, index) {
+      this.identificadorEditar = false;
       this.identificadorEditar = true;
+      this.editDescription[JSON.parse(index)] = tareaDescription;
     },
-    actualizarTarea: function actualizarTarea(id) {
+    actualizarTarea: function actualizarTarea(id, index) {
       var _this3 = this;
 
       this.identificadorEditar = false;
       var parametros = {
-        description: this.editDescription
+        description: this.editDescription[index]
       };
       var url = 'actualizar-tareas/' + id;
       axios.put(url, parametros).then(function (response) {
-        // si hay una respuesta ok
+        // si hay una respuesta ok          
+        _this3.editDescription = [];
+
         _this3.getTareas();
 
-        _this3.newIdea = '';
-        toastr__WEBPACK_IMPORTED_MODULE_1___default.a.success('No hubo problemas al guardar.', 'EXITOSO', {
-          timeOut: 95000
-        });
+        _this3.newIdea = ''; // toastr.success( response.data.message , 'EXITOSO', {timeOut: 5000})                              
       }).catch(function (error) {
         // si hay un error
         toastr__WEBPACK_IMPORTED_MODULE_1___default.a.error('Error');
       });
+    },
+    cancelarActualizarTarea: function cancelarActualizarTarea() {
+      this.identificadorEditar = false;
     },
     deleteTarea: function deleteTarea(id) {
       var _this4 = this;
 
       var message = "¿ seguro desea eliminar ?";
       var url = "eliminar-tareas/" + id;
-      alert(url);
       axios.delete(url).then(function (response) {
         // si hay una respuesta ok
+        _this4.editDescription = [];
+
         _this4.getTareas();
 
-        _this4.newIdea = '';
-        toastr__WEBPACK_IMPORTED_MODULE_1___default.a.success('No hubo problemas al Eliminar.', 'EXITOSO', {
-          timeOut: 95000
-        });
+        _this4.newIdea = ''; // toastr.success(response.data.message, 'EXITOSO', {timeOut: 5000})                              
+
+        _this4.identificadorEditar = false;
       }).catch(function (error) {
         // si hay un error
         toastr__WEBPACK_IMPORTED_MODULE_1___default.a.error('Error');
@@ -55101,25 +55116,19 @@ var render = function() {
                 _c("em", [_vm._v(_vm._s(_vm.since(tarea.created_at)))])
               ]),
               _vm._v(" "),
-              _vm.identificadorEditar == false
-                ? _c("p", { staticClass: "d-inline-block" }, [
-                    _vm._v(_vm._s(tarea.description))
-                  ])
-                : _vm._e(),
-              _vm._v(" "),
-              _vm.identificadorEditar == true
+              _vm.identificadorEditar == true && _vm.editDescription[index]
                 ? _c("input", {
                     directives: [
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.editDescription.index,
-                        expression: "editDescription.index"
+                        value: _vm.editDescription[index],
+                        expression: "editDescription[index]"
                       }
                     ],
                     staticClass: "d-inline-block",
                     attrs: { type: "text" },
-                    domProps: { value: _vm.editDescription.index },
+                    domProps: { value: _vm.editDescription[index] },
                     on: {
                       input: function($event) {
                         if ($event.target.composing) {
@@ -55127,13 +55136,15 @@ var render = function() {
                         }
                         _vm.$set(
                           _vm.editDescription,
-                          "index",
+                          index,
                           $event.target.value
                         )
                       }
                     }
                   })
-                : _vm._e(),
+                : _c("p", { staticClass: "d-inline-block" }, [
+                    _vm._v(_vm._s(tarea.description))
+                  ]),
               _vm._v(" "),
               _c("div", { staticClass: "d-inline-block" }, [
                 _c(
@@ -55148,7 +55159,7 @@ var render = function() {
                   },
                   [
                     _vm._v(
-                      "\n                            Eliminar\n                        "
+                      "\n                                Eliminar\n                            "
                     )
                   ]
                 ),
@@ -55160,7 +55171,7 @@ var render = function() {
                         staticClass: "btn btn-sm btn-primary d-inline-block",
                         on: {
                           click: function($event) {
-                            return _vm.cambioEditar()
+                            return _vm.cambioEditar(tarea.description, index)
                           }
                         },
                         model: {
@@ -55173,20 +55184,20 @@ var render = function() {
                       },
                       [
                         _vm._v(
-                          "\n                            Editar \n                        "
+                          "\n                                Editar \n                            "
                         )
                       ]
                     )
                   : _vm._e(),
                 _vm._v(" "),
-                _vm.identificadorEditar == true
+                _vm.identificadorEditar == true && _vm.editDescription[index]
                   ? _c(
                       "button",
                       {
                         staticClass: "btn btn-sm btn-primary d-inline-block",
                         on: {
                           click: function($event) {
-                            return _vm.actualizarTarea(tarea.id)
+                            return _vm.actualizarTarea(tarea.id, index)
                           }
                         },
                         model: {
@@ -55199,7 +55210,33 @@ var render = function() {
                       },
                       [
                         _vm._v(
-                          "\n                            Guardar\n                        "
+                          "\n                                Guardar\n                            "
+                        )
+                      ]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.identificadorEditar == true && _vm.editDescription[index]
+                  ? _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-sm btn-warning d-inline-block",
+                        on: {
+                          click: function($event) {
+                            return _vm.cancelarActualizarTarea()
+                          }
+                        },
+                        model: {
+                          value: _vm.identificadorEditar,
+                          callback: function($$v) {
+                            _vm.identificadorEditar = $$v
+                          },
+                          expression: "identificadorEditar"
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                                Cancelar\n                            "
                         )
                       ]
                     )
@@ -67481,8 +67518,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\desarrollo\magdalena\casatoro\tareascrudvuelaravel\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\desarrollo\magdalena\casatoro\tareascrudvuelaravel\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\desarrollo\tareascrudvuelaravel\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\desarrollo\tareascrudvuelaravel\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

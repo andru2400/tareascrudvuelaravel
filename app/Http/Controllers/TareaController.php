@@ -20,23 +20,33 @@ class TareaController extends Controller
    		]);
 
    		Tarea::create($request->all());   		
-   		return;
+   		
+      return response()->json([
+              'message' => 'Se creo, Satisfactoriamente',
+              'status' => 'ok'
+      ]);
    	}
 
       public function update(Request $request,$id)
-      {  
-
-          dd($request->all());
+      {          
           $tarea = Tarea::find($id);
           $tarea->description = $request->description;
           $tarea->save();
-          return;
+         return response()->json([
+              'message' => 'Se Actualizo, Satisfactoriamente',
+              'status' => 'ok'
+         ]);
+
       }
 
       public function destroy($id)
       {        
          $tarea = Tarea::find($id);
          $tarea->delete();
-         return;
+
+         return response()->json([
+              'message' => 'Se Elimino, Satisfactoriamente',
+              'status' => 'ok'
+         ]);
       }
 }

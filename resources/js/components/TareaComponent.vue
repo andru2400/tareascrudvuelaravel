@@ -20,18 +20,21 @@
                         <small class="text-muted">
                             <em>{{ since(tarea.created_at) }}</em>
                         </small>
-                        <p class="d-inline-block" v-if="identificadorEditar == false">{{ tarea.description }}</p>
-                        <input type="text" class="d-inline-block" v-if="identificadorEditar == true" v-model="editDescription.index">
+                        <input type="text" class="d-inline-block" v-if="identificadorEditar == true && editDescription[index]" v-model="editDescription[index]">
+                        <p class="d-inline-block" v-else>{{ tarea.description }}</p>
     
                          <div class="d-inline-block">
                             <button class="btn btn-sm btn-danger d-inline-block" v-on:click="deleteTarea(tarea.id)">
                                 Eliminar
                             </button>
-                            <button class="btn btn-sm btn-primary d-inline-block" v-model="identificadorEditar" v-if="identificadorEditar == false" v-on:click="cambioEditar()">
+                            <button class="btn btn-sm btn-primary d-inline-block" v-model="identificadorEditar" v-if="identificadorEditar == false" v-on:click="cambioEditar(tarea.description,index)">
                                 Editar 
                             </button>
-                            <button class="btn btn-sm btn-primary d-inline-block" v-model="identificadorEditar" v-if="identificadorEditar == true" v-on:click="actualizarTarea(tarea.id)">
+                            <button class="btn btn-sm btn-primary d-inline-block" v-model="identificadorEditar" v-if="identificadorEditar == true && editDescription[index]" v-on:click="actualizarTarea(tarea.id,index)">
                                 Guardar
+                            </button>
+                            <button class="btn btn-sm btn-warning d-inline-block" v-model="identificadorEditar" v-if="identificadorEditar == true && editDescription[index]" v-on:click="cancelarActualizarTarea()">
+                                Cancelar
                             </button>
                         </div>    
 
@@ -39,10 +42,16 @@
                 </li>
             </ul>
         </div>
+
+<!--  -->
+
+
+<!--  -->
+
         <div class="card-body">
             
         </div>
-    </div> 
+    </div>    
 
 </template>
 
@@ -61,7 +70,7 @@
                 tareas: [],
                 newTarea:'',
                 identificadorEditar: false,
-                editDescription : ''
+                editDescription : []
             }
         },
         created: function(){
@@ -72,46 +81,64 @@
         },
         methods:{
             getTareas: function(){
+                // $('#loadersModal').modal('toggle');
                 var url = 'mis-tareas';
                 axios.get(url).then(response => {
                     this.tareas = response.data
+                     // $('#loadersModal').modal('toggle');
                 });
             },
             createTarea: function(){
+               
                 var url = 'guardar-tareas';
                 axios.post(url,{description: this.newTarea
                 }).then(response => { // si hay una respuesta ok
+                   
+                    this.editDescription = [];
                     this.getTareas();
-                    this.newIdea = '';
-                    toastr.success('No hubo problemas al guardar.', 'EXITOSO', {timeOut: 95000})          
+                    this.newIdea = '';                           
+                    // toastr.success(response.data.message , 'EXITOSO', {timeOut: 55000})                     
+                    this.identificadorEditar = false;
+                    
                 }).catch( error => { // si hay un error
                     toastr.error('Error',);
                 });    
             },
-            cambioEditar: function(){
-                this.identificadorEditar = true;
+            cambioEditar: function(tareaDescription,index){                
+                this.identificadorEditar = false;                
+                this.identificadorEditar = true;                
+                this.editDescription[JSON.parse(index)] = tareaDescription;
             },
-            actualizarTarea: function(id){
+            actualizarTarea: function(id,index){
+              
                 this.identificadorEditar = false;
 
-                var parametros = { description: this.editDescription };
+                var parametros = { description: this.editDescription[index] };
                 var url = 'actualizar-tareas/'+id;
-                axios.put(url,parametros).then(response => { // si hay una respuesta ok
+                axios.put(url,parametros).then(response => { // si hay una respuesta ok          
+                  
+                    this.editDescription = [];
                     this.getTareas();
-                    this.newIdea = '';
-                    toastr.success('No hubo problemas al guardar.', 'EXITOSO', {timeOut: 95000})          
+                    this.newIdea = '';                        
+                    // toastr.success( response.data.message , 'EXITOSO', {timeOut: 5000})                              
                 }).catch( error => { // si hay un error
                     toastr.error('Error',);
                 });    
             },
+            cancelarActualizarTarea: function(){
+                this.identificadorEditar = false;
+            },
             deleteTarea: function(id){
+               
                 var message = "¿ seguro desea eliminar ?";
-                var url = "eliminar-tareas/"+id;
-                alert(url);
+                var url = "eliminar-tareas/"+id;                
                 axios.delete(url).then(response => { // si hay una respuesta ok
+                  
+                    this.editDescription = [];
                     this.getTareas();
-                    this.newIdea = '';
-                    toastr.success('No hubo problemas al Eliminar.', 'EXITOSO', {timeOut: 95000})          
+                    this.newIdea = '';                          
+                    // toastr.success(response.data.message, 'EXITOSO', {timeOut: 5000})                              
+                    this.identificadorEditar = false;
                 }).catch( error => { // si hay un error
                     toastr.error('Error',);
                 });  
