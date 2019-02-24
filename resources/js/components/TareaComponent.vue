@@ -127,6 +127,7 @@
             },
             cancelarActualizarTarea: function(){
                 this.identificadorEditar = false;
+                 this.editDescription = [];
             },
             deleteTarea: function(id){
                
